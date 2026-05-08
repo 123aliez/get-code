@@ -6,16 +6,20 @@
 <title>验证码获取</title>
 <style>
   :root {
-    --bg: #0f0f11;
-    --card: #1a1a20;
-    --border: #2a2a32;
-    --text: #e4e4e7;
-    --text2: #a1a1aa;
+    --bg: #0a0a0f;
+    --card: rgba(22, 22, 32, 0.8);
+    --border: rgba(99, 102, 241, 0.15);
+    --border-hover: rgba(99, 102, 241, 0.35);
+    --text: #eeeef0;
+    --text2: #9494a8;
     --accent: #6366f1;
-    --accent-hover: #818cf8;
-    --green: #22c55e;
-    --red: #ef4444;
-    --orange: #f59e0b;
+    --accent2: #818cf8;
+    --accent3: #a78bfa;
+    --green: #34d399;
+    --red: #f87171;
+    --orange: #fbbf24;
+    --glow: rgba(99, 102, 241, 0.25);
+    --green-glow: rgba(52, 211, 153, 0.4);
   }
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -28,41 +32,70 @@
     display: flex;
     align-items: flex-start;
     justify-content: center;
-    padding: 40px 16px;
+    padding: 48px 20px;
+    background-image:
+      radial-gradient(ellipse 80% 50% at 50% -20%, rgba(99, 102, 241, 0.12), transparent),
+      radial-gradient(ellipse 60% 40% at 80% 100%, rgba(139, 92, 246, 0.06), transparent);
   }
 
   .container {
     width: 100%;
-    max-width: 560px;
+    max-width: 720px;
   }
 
   .header {
     text-align: center;
-    margin-bottom: 32px;
+    margin-bottom: 40px;
   }
 
   .header h1 {
-    font-size: 24px;
-    font-weight: 600;
-    margin-bottom: 6px;
+    font-size: 32px;
+    font-weight: 700;
+    margin-bottom: 10px;
     letter-spacing: -0.5px;
+    background: linear-gradient(135deg, #c7d2fe, #818cf8, #a78bfa);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
   }
 
   .header p {
     color: var(--text2);
-    font-size: 14px;
+    font-size: 15px;
+  }
+
+  .header .divider {
+    width: 48px;
+    height: 3px;
+    margin: 14px auto 0;
+    border-radius: 2px;
+    background: linear-gradient(90deg, var(--accent), var(--accent3));
   }
 
   .card {
     background: var(--card);
     border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 24px;
-    margin-bottom: 16px;
+    border-radius: 16px;
+    padding: 32px;
+    margin-bottom: 20px;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(129, 140, 248, 0.3), transparent);
   }
 
   .field {
-    margin-bottom: 16px;
+    margin-bottom: 22px;
   }
 
   .field:last-child {
@@ -72,37 +105,45 @@
   label {
     display: block;
     font-size: 13px;
-    font-weight: 500;
+    font-weight: 600;
     color: var(--text2);
-    margin-bottom: 6px;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
   }
 
   textarea, input[type="text"] {
     width: 100%;
-    background: var(--bg);
+    background: rgba(10, 10, 15, 0.6);
     border: 1px solid var(--border);
-    border-radius: 8px;
+    border-radius: 12px;
     color: var(--text);
-    font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
-    font-size: 13px;
-    padding: 10px 12px;
+    font-family: 'SF Mono', 'Fira Code', 'Consolas', 'Courier New', monospace;
+    font-size: 15px;
+    line-height: 1.7;
+    padding: 16px 18px;
     outline: none;
-    transition: border-color 0.2s;
+    transition: border-color 0.3s, box-shadow 0.3s;
   }
 
   textarea:focus, input[type="text"]:focus {
     border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--glow), 0 0 20px rgba(99, 102, 241, 0.1);
   }
 
   textarea {
     resize: vertical;
-    min-height: 72px;
+    min-height: 140px;
+  }
+
+  textarea::placeholder, input::placeholder {
+    color: rgba(148, 148, 168, 0.5);
   }
 
   .options-row {
     display: grid;
     grid-template-columns: 1fr 1fr 1fr;
-    gap: 12px;
+    gap: 16px;
   }
 
   .toggle-options {
@@ -111,16 +152,21 @@
     justify-content: space-between;
     cursor: pointer;
     font-size: 13px;
+    font-weight: 600;
     color: var(--text2);
-    padding: 4px 0;
+    padding: 6px 0;
     user-select: none;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: color 0.2s;
   }
 
-  .toggle-options:hover { color: var(--text); }
+  .toggle-options:hover { color: var(--accent2); }
 
   .toggle-options .arrow {
-    transition: transform 0.2s;
-    font-size: 12px;
+    transition: transform 0.3s;
+    font-size: 10px;
+    color: var(--accent);
   }
 
   .toggle-options .arrow.open {
@@ -129,35 +175,49 @@
 
   .options-panel {
     display: none;
-    margin-top: 12px;
+    margin-top: 16px;
   }
 
   .options-panel.show {
     display: block;
+    animation: fadeIn 0.3s ease;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-8px); }
+    to { opacity: 1; transform: translateY(0); }
   }
 
   .btn {
     width: 100%;
-    padding: 12px;
+    padding: 16px;
     border: none;
-    border-radius: 8px;
-    font-size: 15px;
-    font-weight: 600;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 700;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all 0.3s;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 8px;
+    gap: 10px;
+    letter-spacing: 0.5px;
   }
 
   .btn-primary {
-    background: var(--accent);
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
     color: white;
+    box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
   }
 
   .btn-primary:hover:not(:disabled) {
-    background: var(--accent-hover);
+    background: linear-gradient(135deg, #7c7ff7, #9d78f8);
+    box-shadow: 0 6px 25px rgba(99, 102, 241, 0.45);
+    transform: translateY(-1px);
+  }
+
+  .btn-primary:active:not(:disabled) {
+    transform: translateY(0);
   }
 
   .btn-primary:disabled {
@@ -166,12 +226,15 @@
   }
 
   .btn-stop {
-    background: var(--red);
+    background: linear-gradient(135deg, #ef4444, #dc2626);
     color: white;
+    box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
   }
 
   .btn-stop:hover {
-    background: #dc2626;
+    background: linear-gradient(135deg, #f87171, #ef4444);
+    box-shadow: 0 6px 25px rgba(239, 68, 68, 0.45);
+    transform: translateY(-1px);
   }
 
   /* Result area */
@@ -181,49 +244,56 @@
 
   .result-card.show {
     display: block;
+    animation: fadeIn 0.3s ease;
   }
 
   .code-display {
     text-align: center;
-    padding: 24px 0 16px;
+    padding: 32px 0 20px;
   }
 
   .code-display .label {
-    font-size: 13px;
+    font-size: 12px;
+    font-weight: 600;
     color: var(--text2);
-    margin-bottom: 8px;
+    margin-bottom: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
   }
 
   .code-display .code {
-    font-size: 42px;
-    font-weight: 700;
+    font-size: 52px;
+    font-weight: 800;
     font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
-    letter-spacing: 8px;
+    letter-spacing: 12px;
     color: var(--green);
     cursor: pointer;
-    transition: color 0.2s;
+    transition: all 0.3s;
     position: relative;
+    text-shadow: 0 0 30px var(--green-glow);
   }
 
   .code-display .code:hover {
-    color: #4ade80;
+    color: #6ee7b7;
+    text-shadow: 0 0 40px var(--green-glow), 0 0 80px rgba(52, 211, 153, 0.2);
+    transform: scale(1.02);
   }
 
   .code-display .code.copied::after {
     content: '已复制';
     position: absolute;
-    bottom: -24px;
+    bottom: -28px;
     left: 50%;
     transform: translateX(-50%);
     font-size: 12px;
-    color: var(--text2);
+    color: var(--green);
     letter-spacing: 0;
-    font-weight: 400;
+    font-weight: 600;
   }
 
   .code-display .status {
-    font-size: 13px;
-    margin-top: 8px;
+    font-size: 14px;
+    margin-top: 12px;
     color: var(--text2);
   }
 
@@ -233,22 +303,35 @@
 
   /* Log area */
   .log-area {
-    background: var(--bg);
+    background: rgba(10, 10, 15, 0.6);
     border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 12px;
-    font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
-    font-size: 12px;
-    line-height: 1.6;
-    max-height: 280px;
+    border-radius: 12px;
+    padding: 16px 18px;
+    font-family: 'SF Mono', 'Fira Code', 'Consolas', 'Courier New', monospace;
+    font-size: 13px;
+    line-height: 1.7;
+    max-height: 320px;
     overflow-y: auto;
     color: var(--text2);
     white-space: pre-wrap;
     word-break: break-all;
   }
 
+  .log-area::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .log-area::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .log-area::-webkit-scrollbar-thumb {
+    background: rgba(99, 102, 241, 0.3);
+    border-radius: 3px;
+  }
+
   .log-area .log-line {
-    padding: 1px 0;
+    padding: 2px 0;
   }
 
   .log-area .log-line.stderr {
@@ -257,9 +340,9 @@
 
   /* Spinner */
   .spinner {
-    width: 18px;
-    height: 18px;
-    border: 2px solid rgba(255,255,255,0.2);
+    width: 20px;
+    height: 20px;
+    border: 2.5px solid rgba(255,255,255,0.2);
     border-top-color: white;
     border-radius: 50%;
     animation: spin 0.6s linear infinite;
@@ -272,19 +355,23 @@
   /* Toast */
   .toast {
     position: fixed;
-    bottom: 24px;
+    bottom: 28px;
     left: 50%;
     transform: translateX(-50%) translateY(100px);
     background: var(--card);
     border: 1px solid var(--border);
-    padding: 10px 20px;
-    border-radius: 8px;
-    font-size: 13px;
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    padding: 12px 24px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 500;
     color: var(--text);
     opacity: 0;
     transition: all 0.3s ease;
     pointer-events: none;
     z-index: 100;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.3);
   }
 
   .toast.show {
@@ -293,10 +380,14 @@
   }
 
   /* Responsive */
-  @media (max-width: 480px) {
-    body { padding: 20px 12px; }
+  @media (max-width: 640px) {
+    body { padding: 24px 12px; }
+    .container { max-width: 100%; }
+    .card { padding: 24px 20px; }
     .options-row { grid-template-columns: 1fr; }
-    .code-display .code { font-size: 32px; letter-spacing: 6px; }
+    .code-display .code { font-size: 36px; letter-spacing: 8px; }
+    .header h1 { font-size: 26px; }
+    textarea { min-height: 110px; font-size: 14px; }
   }
 </style>
 </head>
@@ -304,8 +395,9 @@
 
 <div class="container">
   <div class="header">
-    <h1>📬 验证码获取</h1>
+    <h1>验证码获取</h1>
     <p>输入 Outlook 账号信息，自动获取邮件验证码</p>
+    <div class="divider"></div>
   </div>
 
   <div class="card">
@@ -359,7 +451,6 @@
 <script>
 const $ = id => document.getElementById(id);
 
-let currentES = null;  // EventSource-like (we use fetch+reader)
 let abortCtrl = null;
 
 function toggleOptions() {
@@ -424,7 +515,6 @@ async function startFetch() {
     return;
   }
 
-  // 准备 UI
   $('resultCard').classList.add('show');
   $('codeDisplay').style.display = 'none';
   $('logArea').innerHTML = '';
@@ -467,7 +557,7 @@ async function startFetch() {
 
       buffer += decoder.decode(value, { stream: true });
       const lines = buffer.split('\n');
-      buffer = lines.pop(); // keep incomplete line
+      buffer = lines.pop();
 
       for (const line of lines) {
         if (!line.startsWith('data: ')) continue;
@@ -495,7 +585,6 @@ async function startFetch() {
               $('codeStatus').className = 'status error';
               appendLog(`\n❌ 未找到验证码`);
 
-              // 重置颜色以备下次使用
               setTimeout(() => {
                 $('codeValue').style.color = '';
               }, 100);
@@ -513,7 +602,6 @@ async function startFetch() {
   }
 }
 
-// 回车快捷键
 $('account').addEventListener('keydown', e => {
   if (e.key === 'Enter' && !e.shiftKey) {
     e.preventDefault();
