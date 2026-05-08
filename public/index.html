@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>验证码获取</title>
+<style>
+  :root {
+    --bg: #0f0f11;
+    --card: #1a1a20;
+    --border: #2a2a32;
+    --text: #e4e4e7;
+    --text2: #a1a1aa;
+    --accent: #6366f1;
+    --accent-hover: #818cf8;
+    --green: #22c55e;
+    --red: #ef4444;
+    --orange: #f59e0b;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 40px 16px;
+  }
+
+  .container {
+    width: 100%;
+    max-width: 560px;
+  }
+
+  .header {
+    text-align: center;
+    margin-bottom: 32px;
+  }
+
+  .header h1 {
+    font-size: 24px;
+    font-weight: 600;
+    margin-bottom: 6px;
+    letter-spacing: -0.5px;
+  }
+
+  .header p {
+    color: var(--text2);
+    font-size: 14px;
+  }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 16px;
+  }
+
+  .field {
+    margin-bottom: 16px;
+  }
+
+  .field:last-child {
+    margin-bottom: 0;
+  }
+
+  label {
+    display: block;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text2);
+    margin-bottom: 6px;
+  }
+
+  textarea, input[type="text"] {
+    width: 100%;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+    font-size: 13px;
+    padding: 10px 12px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  textarea:focus, input[type="text"]:focus {
+    border-color: var(--accent);
+  }
+
+  textarea {
+    resize: vertical;
+    min-height: 72px;
+  }
+
+  .options-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 12px;
+  }
+
+  .toggle-options {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    font-size: 13px;
+    color: var(--text2);
+    padding: 4px 0;
+    user-select: none;
+  }
+
+  .toggle-options:hover { color: var(--text); }
+
+  .toggle-options .arrow {
+    transition: transform 0.2s;
+    font-size: 12px;
+  }
+
+  .toggle-options .arrow.open {
+    transform: rotate(90deg);
+  }
+
+  .options-panel {
+    display: none;
+    margin-top: 12px;
+  }
+
+  .options-panel.show {
+    display: block;
+  }
+
+  .btn {
+    width: 100%;
+    padding: 12px;
+    border: none;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+
+  .btn-primary {
+    background: var(--accent);
+    color: white;
+  }
+
+  .btn-primary:hover:not(:disabled) {
+    background: var(--accent-hover);
+  }
+
+  .btn-primary:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .btn-stop {
+    background: var(--red);
+    color: white;
+  }
+
+  .btn-stop:hover {
+    background: #dc2626;
+  }
+
+  /* Result area */
+  .result-card {
+    display: none;
+  }
+
+  .result-card.show {
+    display: block;
+  }
+
+  .code-display {
+    text-align: center;
+    padding: 24px 0 16px;
+  }
+
+  .code-display .label {
+    font-size: 13px;
+    color: var(--text2);
+    margin-bottom: 8px;
+  }
+
+  .code-display .code {
+    font-size: 42px;
+    font-weight: 700;
+    font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+    letter-spacing: 8px;
+    color: var(--green);
+    cursor: pointer;
+    transition: color 0.2s;
+    position: relative;
+  }
+
+  .code-display .code:hover {
+    color: #4ade80;
+  }
+
+  .code-display .code.copied::after {
+    content: '已复制';
+    position: absolute;
+    bottom: -24px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 12px;
+    color: var(--text2);
+    letter-spacing: 0;
+    font-weight: 400;
+  }
+
+  .code-display .status {
+    font-size: 13px;
+    margin-top: 8px;
+    color: var(--text2);
+  }
+
+  .code-display .status.error {
+    color: var(--red);
+  }
+
+  /* Log area */
+  .log-area {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px;
+    font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+    font-size: 12px;
+    line-height: 1.6;
+    max-height: 280px;
+    overflow-y: auto;
+    color: var(--text2);
+    white-space: pre-wrap;
+    word-break: break-all;
+  }
+
+  .log-area .log-line {
+    padding: 1px 0;
+  }
+
+  .log-area .log-line.stderr {
+    color: var(--orange);
+  }
+
+  /* Spinner */
+  .spinner {
+    width: 18px;
+    height: 18px;
+    border: 2px solid rgba(255,255,255,0.2);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+  }
+
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+
+  /* Toast */
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background: var(--card);
+    border: 1px solid var(--border);
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 13px;
+    color: var(--text);
+    opacity: 0;
+    transition: all 0.3s ease;
+    pointer-events: none;
+    z-index: 100;
+  }
+
+  .toast.show {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+  }
+
+  /* Responsive */
+  @media (max-width: 480px) {
+    body { padding: 20px 12px; }
+    .options-row { grid-template-columns: 1fr; }
+    .code-display .code { font-size: 32px; letter-spacing: 6px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <div class="header">
+    <h1>📬 验证码获取</h1>
+    <p>输入 Outlook 账号信息，自动获取邮件验证码</p>
+  </div>
+
+  <div class="card">
+    <div class="field">
+      <label>账号信息</label>
+      <textarea id="account" placeholder="邮箱----密码----clientId----refreshToken" spellcheck="false"></textarea>
+    </div>
+
+    <div class="field">
+      <div class="toggle-options" onclick="toggleOptions()">
+        <span>高级选项</span>
+        <span class="arrow" id="arrow">▶</span>
+      </div>
+      <div class="options-panel" id="optionsPanel">
+        <div class="options-row">
+          <div class="field">
+            <label>发件人过滤</label>
+            <input type="text" id="sender" placeholder="可选">
+          </div>
+          <div class="field">
+            <label>主题过滤</label>
+            <input type="text" id="subject" placeholder="可选">
+          </div>
+          <div class="field">
+            <label>验证码位数</label>
+            <input type="text" id="digits" placeholder="4-8" value="4-8">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="field">
+      <button class="btn btn-primary" id="submitBtn" onclick="startFetch()">
+        获取验证码
+      </button>
+    </div>
+  </div>
+
+  <div class="card result-card" id="resultCard">
+    <div class="code-display" id="codeDisplay" style="display:none;">
+      <div class="label">验证码</div>
+      <div class="code" id="codeValue" onclick="copyCode()"></div>
+      <div class="status" id="codeStatus"></div>
+    </div>
+    <div class="log-area" id="logArea"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const $ = id => document.getElementById(id);
+
+let currentES = null;  // EventSource-like (we use fetch+reader)
+let abortCtrl = null;
+
+function toggleOptions() {
+  const panel = $('optionsPanel');
+  const arrow = $('arrow');
+  panel.classList.toggle('show');
+  arrow.classList.toggle('open');
+}
+
+function showToast(msg, ms = 2000) {
+  const t = $('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), ms);
+}
+
+function copyCode() {
+  const code = $('codeValue').textContent;
+  if (!code) return;
+  navigator.clipboard.writeText(code).then(() => {
+    $('codeValue').classList.add('copied');
+    setTimeout(() => $('codeValue').classList.remove('copied'), 1500);
+  });
+}
+
+function appendLog(text, isStderr) {
+  const area = $('logArea');
+  const line = document.createElement('div');
+  line.className = 'log-line' + (isStderr ? ' stderr' : '');
+  line.textContent = text;
+  area.appendChild(line);
+  area.scrollTop = area.scrollHeight;
+}
+
+function setLoading(loading) {
+  const btn = $('submitBtn');
+  if (loading) {
+    btn.className = 'btn btn-stop';
+    btn.innerHTML = '<div class="spinner"></div> 停止';
+    btn.onclick = stopFetch;
+  } else {
+    btn.className = 'btn btn-primary';
+    btn.innerHTML = '获取验证码';
+    btn.onclick = startFetch;
+    btn.disabled = false;
+  }
+}
+
+function stopFetch() {
+  if (abortCtrl) {
+    abortCtrl.abort();
+    abortCtrl = null;
+  }
+  setLoading(false);
+  appendLog('\n[已手动停止]');
+}
+
+async function startFetch() {
+  const account = $('account').value.trim();
+  if (!account) {
+    showToast('请输入账号信息');
+    return;
+  }
+
+  // 准备 UI
+  $('resultCard').classList.add('show');
+  $('codeDisplay').style.display = 'none';
+  $('logArea').innerHTML = '';
+  setLoading(true);
+
+  const options = {};
+  const sender = $('sender').value.trim();
+  const subject = $('subject').value.trim();
+  const digits = $('digits').value.trim();
+  if (sender) options.sender = sender;
+  if (subject) options.subject = subject;
+  if (digits) options.digits = digits;
+
+  const body = JSON.stringify({ account, options, stream: true });
+
+  abortCtrl = new AbortController();
+
+  try {
+    const res = await fetch('/api/get-code', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body,
+      signal: abortCtrl.signal,
+    });
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ error: res.statusText }));
+      appendLog('错误: ' + (err.error || res.statusText));
+      setLoading(false);
+      return;
+    }
+
+    const reader = res.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '';
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split('\n');
+      buffer = lines.pop(); // keep incomplete line
+
+      for (const line of lines) {
+        if (!line.startsWith('data: ')) continue;
+        try {
+          const data = JSON.parse(line.slice(6));
+
+          if (data.type === 'start') {
+            appendLog(`[任务 #${data.taskId}] 开始获取验证码...\n`);
+          } else if (data.type === 'log') {
+            const text = data.text || '';
+            const isStderr = text.startsWith('[stderr]');
+            appendLog(text.replace(/\n$/, ''), isStderr);
+          } else if (data.type === 'done') {
+            if (data.code) {
+              $('codeDisplay').style.display = 'block';
+              $('codeValue').textContent = data.code;
+              $('codeStatus').textContent = '点击验证码可复制';
+              $('codeStatus').className = 'status';
+              appendLog(`\n✅ 获取成功!`);
+            } else {
+              $('codeDisplay').style.display = 'block';
+              $('codeValue').textContent = '—';
+              $('codeValue').style.color = 'var(--red)';
+              $('codeStatus').textContent = '未能获取到验证码';
+              $('codeStatus').className = 'status error';
+              appendLog(`\n❌ 未找到验证码`);
+
+              // 重置颜色以备下次使用
+              setTimeout(() => {
+                $('codeValue').style.color = '';
+              }, 100);
+            }
+            setLoading(false);
+          }
+        } catch {}
+      }
+    }
+  } catch (e) {
+    if (e.name !== 'AbortError') {
+      appendLog('请求失败: ' + e.message);
+    }
+    setLoading(false);
+  }
+}
+
+// 回车快捷键
+$('account').addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    startFetch();
+  }
+});
+</script>
+
+</body>
+</html>
